@@ -1,22 +1,26 @@
 <?php
 
-$connect = mysqli_connect("localhost", "root", "root", "codeac");
+$connect = new mysqli("localhost", "root", "root", "codeac");
 
 $output = '';
 
-$sql = "SELECT * FROM course WHERE course_title LIKE '%".$_POST["search"]."%'";
+$param = "%{$_POST['search']}%";
 
-$result = mysqli_query($connect, $sql);
+$sql = $connect->prepare("SELECT * FROM course WHERE course_title LIKE ?");
 
-if(mysqli_num_rows($result) > 0){
+$sql->bind_param("s",$param);
 
-  while($row = mysqli_fetch_array($result)){
+$sql->execute();
+
+$result = $sql->get_result();
+
+if($result->num_rows === 0) exit('No rows');
+
+while($row = $result->fetch_assoc()) {
     $output.= "<a href='remove-page.php?id=".$row["course_id"]."'>".$row["course_title"]."</a> <br/>";
   }
   echo $output;
-}
-else{
-  echo 'Match Not Found';
-}
+
+$sql->close();
 
  ?>
